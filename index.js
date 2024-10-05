@@ -97,7 +97,7 @@ app.get("/userdetail", async (req,res) => {
             console.error("Error fetching user details:", error);
             res.status(500).json({ error: "Internal server error" });
         }
-    });
+    })
 
    // const { ObjectId } = require('mongodb');
 
@@ -120,7 +120,7 @@ app.get("/propertydetail/:id", async (req, res) => {
         console.error("Error fetching property details:", error);
         res.status(500).json({ error: "Internal server error" });
     }
-});
+})
 
 app.get("/propertydetail", async function(req,res){
     try {
@@ -166,7 +166,6 @@ app.get("/propertydetail", async function(req,res){
         // mongo shell: db.recipes.find({},{name:1, cuisine:1, tags:1, prepTime:1})
         let propertydetail = await db.collection("propertydetail").find(criteria)
             .project({
-                "propertyid": 1,
                 "nameofProperty": 1,
                 "postalcode": 1,
                 "numberofBedrooms": 1,
@@ -180,11 +179,12 @@ app.get("/propertydetail", async function(req,res){
         console.error("Error fetching property details:", error);
         res.status(500);
     }
-});
+})
 
-app.post('/propertydetail', async (req, res) => {
+// we use app.post for HTTP METHOD POST - usually to add new data
+app.post("/propertydetail", async (req, res) => {
     try {
-        const { _id, propertyid, nameofProperty, homeownerFullname, address, postalcode, numberofBedrooms, numberofBathrooms, carparkLots, amenities } = req.body;
+        let { nameofProperty, homeownerFullname, address, postalcode, numberofBedrooms, numberofBathrooms, carparkLots, amenities } = req.body;
 
         // Basic validation
         if (!nameofProperty || !numberofBathrooms || !numberofBedrooms || !amenities) {
@@ -197,19 +197,9 @@ app.post('/propertydetail', async (req, res) => {
             return res.status(400).json({ error: 'Invalid Property Detail' });
         }
 
-        // find the _id of the related cuisine and add it to the new recipe
-        //    let cuisineDoc = await db.collection('cuisine').findOne({
-        //        "name": cuisine
-         //   })
-//
-         //   if (!cuisineDoc) {
-         //       return res.status(400).json({"error":"Cuisine not found"})
-          //  }
 
-        // Create the new propertydetail object
-        const newpropertydetail = {
-            _id,
-            propertyid,
+          // Create the new propertydetail object
+          let newpropertydetailDoc = {
             nameofProperty,
             homeownerFullname,
             address,
@@ -221,20 +211,48 @@ app.post('/propertydetail', async (req, res) => {
         };
 
         // Insert the new recipe into the database
-        const result = await db.collection('propertydetail').insertOne(newpropertydetail);
+        let result = await db.collection("propertydetail").insertOne(newpropertydetailDoc);
 
         // Send back the created recipe
         res.status(201).json({
             message: 'Property detail created successfully',
-            propertydetailId: result.insertedId
+            propertydetailId: result.insertedId // insertedId is the _id of the new document
         });
     } catch (error) {
         console.error('Error creating property detail:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
-});
+})
 
-}
+app.post('/vip', async function (req, res) {
+
+    try {
+        let {vipname} = req.body;
+        }
+        if (!vipname) {
+            return res.status(400).json({
+                "error": "Please provide vip name"
+            })
+        }
+        // if the request has both email and password
+        let userDocument = {
+            vipname
+        };
+
+        let result = await db.collection("vip").insertOne(userDocument);
+
+        res.json({
+            "message":"New VIP account has been created",
+            result
+        })
+
+    } catch (e) {
+        console.error(e);
+        res.status(500);
+    }
+})
+
+
     
     
     main();
