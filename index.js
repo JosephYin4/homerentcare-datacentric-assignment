@@ -1,15 +1,17 @@
 const express = require('express');
-const cors = require("cors");
+const cors = require('cors');
 require('dotenv').config();
-const MongoClient = require("mongodb").MongoClient;
-const dbname = "homerentcare"; // CHANGE THIS TO YOUR ACTUAL DATABASE NAME
-const mongoUri = process.env.MONGO_URI;
+const { MongoClient, ObjectId } = require('mongodb');
+
 
 // !! Enable processing JSON data
-let app = express();
+const app = express();
 
-// !! Enable CORS
+// Middleware
+app.use(express.json());
 app.use(cors());
+const dbname = "homerentcare"; // CHANGE THIS TO YOUR ACTUAL DATABASE NAME
+const mongoUri = process.env.MONGO_URI;
 
 async function connect(uri, dbname) {
     let client = await MongoClient.connect(uri, {
@@ -18,10 +20,6 @@ async function connect(uri, dbname) {
     _db = client.db(dbname);
     return _db;
 }
-
-
-
-
 
 async function main() {
         let db = await connect(mongoUri, dbname);
@@ -223,37 +221,6 @@ app.post("/propertydetail", async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 })
-
-app.post('/vip', async function (req, res) {
-
-    try {
-        let {vipname} = req.body;
-        }
-        if (!vipname) {
-            return res.status(400).json({
-                "error": "Please provide vip name"
-            })
-        }
-        // if the request has both email and password
-        let userDocument = {
-            vipname
-        };
-
-        let result = await db.collection("vip").insertOne(userDocument);
-
-        res.json({
-            "message":"New VIP account has been created",
-            result
-        })
-
-    } catch (e) {
-        console.error(e);
-        res.status(500);
-    }
-})
-
-
-    
     
     main();
 
@@ -261,4 +228,4 @@ app.post('/vip', async function (req, res) {
 app.listen(3000, ()=>{
     console.log("Server started")
 })
-
+}
